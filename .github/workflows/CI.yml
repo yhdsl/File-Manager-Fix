@@ -1,0 +1,48 @@
+name: Bulid File-Manager Release CI
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout local translate
+      uses: actions/checkout@v6
+      with:
+        repository: 'yhdsl/File-Manager-Fix'
+        path: './translate'
+
+    - name: Checkout translator tool
+      uses: actions/checkout@v6
+      with:
+        repository: 'yhdsl/Translator-Tool'
+        path: './tool'
+
+    - name: Checkout TrafficMonitor source code
+      uses: actions/checkout@v6
+      with:
+        repository: 'FossifyOrg/File-Manager'
+        path: './File-Manager'
+
+    - name: Setup Python
+      uses: actions/setup-python@v6
+      with:
+        python-version: '3.14'
+
+    - name: Run translator tool
+      run: python ./tool/translator.py ./translate/rules -r "$(pwd)/File-Manager"
+
+    - name: Fix permissions
+      shell: bash
+      run: |
+        chmod +x ./File-Manager/gradlew
+
+    - name: Build APK
+      shell: bash
+      run: |
+        export JAVA_HOME=$JAVA_HOME_21_X64
+        $ANDROID_HOME/cmdline-tools/**/bin/sdkmanager --update
+        $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --list_installed
+        ./File-Manager/gradlew assembleFossRelease

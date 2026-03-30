@@ -1,0 +1,6 @@
+@AUTHOR=YHDSL
+@VERSION=1.0.0
+@TARGET=./app/src/main/kotlin/org/fossify/filemanager/activities/MainActivity.kt
+@DELIMITER=|
+
+currentItem = config.lastUsedViewPagerPage|currentItem = 0
