@@ -47,3 +47,36 @@ jobs:
         $ANDROID_HOME/cmdline-tools/**/bin/sdkmanager --update
         $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --list_installed
         ./gradlew assembleFossRelease
+
+    - name: Set up Android secrets
+      shell: bash
+      run: |
+        echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d - > $GITHUB_WORKSPACE/File-Manager/android-keystore.jks
+
+    - name: Zipalign APK
+      run: |
+        ZIPALIGN=$ANDROID_HOME/build-tools/36.1.0/zipalign
+        APK=./File-Manager/app/build/outputs/apk/foss/release/file-manager-13-foss-release-unsigned.apk
+        
+        $ZIPALIGN -v 4 "$APK" ./File-Manager/app/build/outputs/apk/foss/release/aligned.apk
+
+    - name: Sign APK
+      run: |
+        APKSIGNER_JAR=$ANDROID_HOME/build-tools/36.1.0/lib/apksigner.jar
+
+        java -jar $APKSIGNER_JAR sign \
+          --ks $GITHUB_WORKSPACE/File-Manager/android-keystore.jks \
+          --ks-key-alias "${{ secrets.KEY_ALIAS }}" \
+          --ks-pass pass:${{ secrets.KEYSTORE_PASSWORD }} \
+          --key-pass pass:${{ secrets.KEY_PASSWORD }} \
+          --v1-signing-enabled true \
+          --v2-signing-enabled true \
+          --v3-signing-enabled true \
+          --out ./File-Manager/app/build/outputs/apk/foss/release/file-manager-13-foss-release.apk \
+          ./File-Manager/app/build/outputs/apk/foss/release/aligned.apk
+
+    - name: Upload Android binary
+      uses: actions/upload-artifact@v7
+      with:
+        name: file-manager-android
+        path: ./File-Manager/app/build/outputs/apk/foss/release/file-manager-13-foss-release.apk
