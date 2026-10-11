@@ -56,8 +56,8 @@ jobs:
     - name: Zipalign APK
       run: |
         ZIPALIGN=$ANDROID_HOME/build-tools/36.1.0/zipalign
-        APK=./File-Manager/app/build/outputs/apk/foss/release/file-manager-13-foss-release-unsigned.apk
-        
+        APK=$(find ./File-Manager/app/build/outputs/apk/foss/release -maxdepth 1 -type f -name '*.apk' | head -n 1)
+
         $ZIPALIGN -v 4 "$APK" ./File-Manager/app/build/outputs/apk/foss/release/aligned.apk
 
     - name: Sign APK
@@ -72,11 +72,11 @@ jobs:
           --v1-signing-enabled true \
           --v2-signing-enabled true \
           --v3-signing-enabled true \
-          --out ./File-Manager/app/build/outputs/apk/foss/release/file-manager-13-foss-release.apk \
+          --out ./File-Manager/app/build/outputs/apk/foss/release/file-manager-foss-release.apk \
           ./File-Manager/app/build/outputs/apk/foss/release/aligned.apk
 
     - name: Upload Android binary
       uses: actions/upload-artifact@v7
       with:
         name: file-manager-android
-        path: ./File-Manager/app/build/outputs/apk/foss/release/file-manager-13-foss-release.apk
+        path: ./File-Manager/app/build/outputs/apk/foss/release/file-manager-foss-release.apk
